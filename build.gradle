@@ -1,0 +1,44 @@
+/**
+see http://jaxenter.com/tutorial-a-guide-to-the-gradle-javafx-plugin-46270.html
+*/
+
+apply from: 'https://repository-javafx-gradle-plugin.forge.cloudbees.com/snapshot/javafx.plugin'
+
+group = 'sk.2my.storganizr'
+version = '0.1.0'
+
+javafx {
+
+    appID 'StOrganizr'
+    appName 'StOrganizr'
+    mainClass 'StOrganizr'
+
+    // deploy/info attributes
+    category = 'demo'
+    copyright = 'Copyright (c) 2013 Tommy Skodje'
+    description = '''Mind-mappy view of files, wiki.'''
+    licenseType = 'Apache 2.0'
+    vendor = 'Me!'
+}
+
+jfxDeploy {
+    // verbose output of the deployment, to the info chanel
+    // it leaves files in the temp dir if set to true
+    verbose = false
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'net.sf.jung:jung2:2.0.1'
+    compile 'net.sf.jung:jung-3d:2.0.1'
+    compile 'net.sf.jung:jung-samples:2.0.1'
+    compile 'colt:colt:1.2.0'
+    compile 'java3d:j3d-core:1.3.1'
+    compile 'org.codehaus.woodstox:wstx-asl:3.2.6'
+
+
+    // testCompile group: 'junit', name: 'junit', version: '4.+'
+}
