@@ -13,25 +13,39 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-import edu.uci.ics.jung.algorithms.layout.*;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.*;
-import edu.uci.ics.jung.visualization.*;
-
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.util.*;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Application;
-import static javafx.application.Application.launch;
 import javafx.event.EventHandler;
-import javafx.scene.*;
-import javafx.scene.input.*;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
-import javafx.scene.text.*;
+import javafx.scene.shape.LineBuilder;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextBuilder;
 import javafx.stage.Stage;
+import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.graph.util.Pair;
 
 /**  */
 public class StOrganizr extends Application {
@@ -42,13 +56,12 @@ public class StOrganizr extends Application {
     private static final int WINDOW_WIDTH		= GRAPH_WIDTH + 2 * FONT_SIZE;
     private static final int WINDOW_HEIGHT	= GRAPH_HEIGHT + 2 * FONT_SIZE;
 
-    @Override public void start(Stage stage) {
+    @Override public void start(Stage stage) throws Exception {
         Group root = new Group();
         Scene scene = new Scene( root, WINDOW_WIDTH, WINDOW_HEIGHT, Color.WHITE );
         Group group = new Group();
 
-        // JUNG TestGraphs
-        Graph<String, Number> graph = TestGraphs.getOneComponentGraph();
+        Graph<String, Number> graph = getGraph();
 
         Layout<String, Number> layout = new SpringLayout<>( graph );
         layout.setSize( new Dimension( GRAPH_WIDTH, GRAPH_HEIGHT ) );
@@ -63,8 +76,36 @@ public class StOrganizr extends Application {
         stage.show();
 
     }
-    
-    /** Get javafx Nodes from graph */
+
+    private Graph<String, Number> getGraph() throws Exception {
+      Path start = FileSystems.getDefault().getPath( "." );
+      Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+          @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+              System.out.println( file.toString() );
+              return FileVisitResult.CONTINUE;
+          }
+          @Override public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
+              if (e == null) {
+                  return FileVisitResult.CONTINUE;
+              } else {
+                  // directory iteration failed
+                  throw e;
+              }
+          }
+      });
+
+      Graph<String, Number> g = new SparseMultigraph<String, Number>();
+      g.addVertex( "v1" );
+      g.addVertex( "v2" );
+      g.addVertex( "v3" );
+      // Add some edges. From above we defined these to be of type String
+      // Note that the default is for undirected edges.
+      g.addEdge( 1, "v1", "v2" );
+      g.addEdge( 2, "v2", "v3" );
+    	return g;	// TestGraphs.getOneComponentGraph();
+		}
+
+		/** Get javafx Nodes from graph */
     private List<Node> nodes2display( Graph<String, Number> graph, Layout<String, Number> layout ) {
     	List<Node> shapes	= new ArrayList<>();
 			for (String v : graph.getVertices()) {
