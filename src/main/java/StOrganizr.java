@@ -59,6 +59,11 @@ public class StOrganizr extends Application {
     @Override public void start(Stage stage) throws Exception {
         Group root = new Group();
         Scene scene = new Scene( root, WINDOW_WIDTH, WINDOW_HEIGHT, Color.WHITE );
+
+        final Text target = new Text( WINDOW_WIDTH / 2 - 60, 20, "DROP ROOT HERE");
+        target.setScaleX(2.0);
+        target.setScaleY(2.0);
+
         Group group = new Group();
 
         Graph<String, Number> graph = getGraph();
@@ -69,7 +74,9 @@ public class StOrganizr extends Application {
 				group.getChildren().addAll( nodes2display( graph, layout ) );
 				group.translateXProperty().set( FONT_SIZE );
 				group.translateYProperty().set( FONT_SIZE );
-        root.getChildren().add( group );
+
+        root.getChildren().add( target );
+				root.getChildren().add( group );
 
         stage.setTitle("Graph");
         stage.setScene(scene);
@@ -81,10 +88,28 @@ public class StOrganizr extends Application {
       Path start = FileSystems.getDefault().getPath( "." );
       Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
           @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-              System.out.println( file.toString() );
-              return FileVisitResult.CONTINUE;
+            System.out.println( file.toString() );
+            return FileVisitResult.CONTINUE;
           }
-          @Override public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
+          private boolean ignoreDir( Path file ) {
+          	String fName	= file.toFile().getName();
+          	if ( fName.equals( "." ) )
+          		return false;
+          	if ( fName.startsWith( "." ) )
+          		return true;
+          	if ( fName.startsWith( "bin" ) )
+          		return true;
+          	if ( fName.startsWith( "build" ) )
+          		return true;
+						return false;
+					}
+
+					@Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+          	if ( ignoreDir( dir ) )
+              return FileVisitResult.SKIP_SUBTREE;
+            return FileVisitResult.CONTINUE;
+					}
+					@Override public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
               if (e == null) {
                   return FileVisitResult.CONTINUE;
               } else {
@@ -150,7 +175,7 @@ public class StOrganizr extends Application {
 					Dragboard db = event.getDragboard();
 					if (db.hasFiles()) {
 						event.acceptTransferModes(TransferMode.COPY);
-						System.out.println("drag over");
+						// System.out.println("drag over");
 					} else {
 						event.consume();
 					}
