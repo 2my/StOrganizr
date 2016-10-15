@@ -16,13 +16,8 @@
 */
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +44,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextBuilder;
 import javafx.stage.Stage;
+import sk.tommy.storganizr.model.DirTreeBuilder;
+import sk.tommy.storganizr.model.FsNode;
 
 /**  */
 public class StOrganizrJungFx extends Application {
@@ -96,46 +93,32 @@ public class StOrganizrJungFx extends Application {
 		stage.show();
 
 	}
+	/* TODO: recurse tree and build
+	private static Node addFsNode(Graph graph, FsNode root) {
+		Node parentN	= graph.addNode(root.id);
+		parentN.addAttribute("ui.label", root.label);
+		for (FsNode node : root.children) {
+			Node child	= addFsNode(graph, node);
+			Element e	= graph.addEdge(parentN.getId() + " - " + child.getId(), parentN, child);
+		}
+		return parentN;
+	}
+
+	private static Graph getGraph2() throws Exception {
+		Graph graph = new MultiGraph("embedded");
+		graph.addAttribute("ui.stylesheet", "edge { fill-color: rgb(255,0,0); }");
+
+		Path start = FileSystems.getDefault().getPath(".");
+		FsNode root	= DirTreeBuilder.buildTree(start);
+		addFsNode(graph, root);
+
+		return graph;
+	}
+	*/
 
 	private DirectedGraph<String, Number> getGraph() throws Exception {
 		Path start = FileSystems.getDefault().getPath(".");
-		Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
-
-			@Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				System.out.println(file.toString());
-				return FileVisitResult.CONTINUE;
-			}
-
-			private boolean ignoreDir(Path file) {
-				String fName = file.toFile().getName();
-				if (fName.equals("."))
-					return false;
-				if (fName.startsWith("."))
-					return true;
-				if (fName.startsWith("bin"))
-					return true;
-				if (fName.startsWith("build"))
-					return true;
-				return false;
-			}
-
-			@Override
-			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-				if (ignoreDir(dir))
-					return FileVisitResult.SKIP_SUBTREE;
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
-				if (e == null) {
-					return FileVisitResult.CONTINUE;
-				} else {
-					// directory iteration failed
-					throw e;
-				}
-			}
-		});
+		FsNode root	= DirTreeBuilder.buildTree(start);
 
 		DirectedGraph<String, Number> g = new DirectedSparseMultigraph<String, Number>();
 		g.addVertex("v1");
