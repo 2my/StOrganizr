@@ -14,7 +14,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -28,9 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.SpringLayout;
+import edu.uci.ics.jung.algorithms.layout.TreeLayout;
+import edu.uci.ics.jung.graph.DelegateTree;
+import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -68,10 +70,19 @@ public class StOrganizrJungFx extends Application {
 
 		Group group = new Group();
 
+		/*
 		Graph<String, Number> graph = getGraph();
-
 		Layout<String, Number> layout = new SpringLayout<>(graph);
 		layout.setSize(new Dimension(GRAPH_WIDTH, GRAPH_HEIGHT));
+
+		Graph<String, Number> graph = getGraph();
+		DAGLayout<String, Number> layout = new DAGLayout<>(graph);
+		layout.setRoot("v1");
+		layout.setSize(new Dimension(GRAPH_WIDTH, GRAPH_HEIGHT));
+		*/
+
+		Forest<String, Number> graph = getForest();
+		Layout<String, Number> layout = new TreeLayout<>(graph);
 
 		group.getChildren().addAll(nodes2display(graph, layout));
 		group.translateXProperty().set(FONT_SIZE);
@@ -86,7 +97,7 @@ public class StOrganizrJungFx extends Application {
 
 	}
 
-	private Graph<String, Number> getGraph() throws Exception {
+	private DirectedGraph<String, Number> getGraph() throws Exception {
 		Path start = FileSystems.getDefault().getPath(".");
 		Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
 
@@ -126,15 +137,30 @@ public class StOrganizrJungFx extends Application {
 			}
 		});
 
-		Graph<String, Number> g = new SparseMultigraph<String, Number>();
+		DirectedGraph<String, Number> g = new DirectedSparseMultigraph<String, Number>();
 		g.addVertex("v1");
 		g.addVertex("v2");
 		g.addVertex("v3");
 		// Add some edges. From above we defined these to be of type String
 		// Note that the default is for undirected edges.
 		g.addEdge(1, "v1", "v2");
-		g.addEdge(2, "v2", "v3");
+		g.addEdge(2, "v1", "v3");
 		return g; // TestGraphs.getOneComponentGraph();
+	}
+
+	private Forest<String, Number> getForest() throws Exception {
+		// return new DelegateTree<>(getGraph());
+		DelegateTree<String, Number> g	= new DelegateTree<>();
+		g.addVertex("v1");
+		g.addChild(1, "v1", "v2");
+		g.addChild(2, "v1", "v3");
+		g.addChild(3, "v1", "v4");
+		g.addChild(4, "v1", "v5");
+		g.addChild(5, "v1", "v6");
+		g.addChild(6, "v1", "v7");
+		g.addChild(7, "v3", "v8");
+		g.addChild(8, "v3", "v9");
+		return g;
 	}
 
 	/** Get javafx Nodes from graph */
@@ -153,12 +179,23 @@ public class StOrganizrJungFx extends Application {
 		return shapes;
 	}
 
+
 	private Node edge(Point2D start, Point2D end) {
-		return LineBuilder.create().startX(start.getX()).startY(start.getY()).endX(end.getX()).endY(end.getY()).build();
+		double yA	= start.getX();
+		double xA	= start.getY();
+		double yB	= end.getX();
+		double xB	= end.getY();
+		Node line	= LineBuilder.create().startX(xA).startY(yA).endX(xB).endY(yB).build();
+		line.setStyle("-fx-stroke: rgb(255,255,100);");
+		line.toBack();
+		return line;
 	}
 
 	private Node vertex(Point2D p, String title) {
-		final Text v = TextBuilder.create().font(new Font(FONT_SIZE)).text(title).x(p.getX()).y(p.getY()).build();
+		double y	= p.getX();
+		double x	= p.getY();
+		final Text v = TextBuilder.create().font(new Font(FONT_SIZE)).text(title).x(x).y(y).build();
+		v.toFront();
 
 		v.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
