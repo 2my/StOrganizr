@@ -76,10 +76,12 @@ public class StOrganizrGraphStream {
 			@Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				System.out.println(file.toString());
 				if ( ! file.toFile().isDirectory() ) {
+					/* do not show files, only directories
 					Node dirN	= dirStack.peek();
 					Node fileN	= graph.addNode(file.toString());
 					Element e	= graph.addEdge(dirN.getId() + " - " + fileN.getId(), dirN, fileN);
 					fileN.addAttribute("ui.label", file.getFileName());
+					*/
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -93,6 +95,10 @@ public class StOrganizrGraphStream {
 				if (fName.startsWith("bin"))
 					return true;
 				if (fName.startsWith("build"))
+					return true;
+				if (fName.startsWith("target"))
+					return true;
+				if (3 <= dirStack.size())
 					return true;
 				return false;
 			}
