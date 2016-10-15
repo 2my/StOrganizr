@@ -33,6 +33,9 @@ import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 
+/**  
+ * @author tommy
+*/
 public class StOrganizrGraphStream {
 
 	private static String name(Path path) {
