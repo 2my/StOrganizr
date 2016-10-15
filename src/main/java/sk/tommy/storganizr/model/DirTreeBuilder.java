@@ -15,14 +15,14 @@ public class DirTreeBuilder extends SimpleFileVisitor<Path> {
 	final Stack<FsNode> dirStack	= new Stack<>();
 
 	private DirTreeBuilder(Path start) {
-		root	= new FsNode(start.toString(), start.toFile().getName(), start.toFile().isDirectory());
+		root	= new FsNode(start.toString(), start.toFile().getName(), !start.toFile().isDirectory());
 	}
 
 	public static FsNode buildTree( Path start ) {
 		try {
 			DirTreeBuilder builder	= new DirTreeBuilder(start);
 			Files.walkFileTree(start, builder);
-			return builder.root;
+			return builder.root.children().get(0);
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
 		}
@@ -34,7 +34,8 @@ public class DirTreeBuilder extends SimpleFileVisitor<Path> {
 
 	@Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		FsNode node	= node(file);
-		dirStack.peek().children.add(node);
+		FsNode parentN	= dirStack.peek();
+		parentN.addChild(node);
 		return FileVisitResult.CONTINUE;
 	}
 
@@ -43,10 +44,8 @@ public class DirTreeBuilder extends SimpleFileVisitor<Path> {
 			return FileVisitResult.SKIP_SUBTREE;
 
 		FsNode node	= node(dir);
-		if ( ! dirStack.isEmpty() ) {
-			FsNode parentN	= dirStack.peek();
-			parentN.children.add(node);
-		}
+		FsNode parentN	= dirStack.isEmpty()? root : dirStack.peek();
+		parentN.addChild(node);
 		dirStack.push(node);
 		// System.out.println("In: " + dir.toString());
 		return FileVisitResult.CONTINUE;
@@ -81,5 +80,7 @@ public class DirTreeBuilder extends SimpleFileVisitor<Path> {
     	// graphStreamHelloWorld
 		Path start = FileSystems.getDefault().getPath(".");
 		FsNode root	= DirTreeBuilder.buildTree(start);
+		for( String key: root.nodeLookup().keySet() )
+			System.out.println(root.nodeLookup().get(key));
     }
 }

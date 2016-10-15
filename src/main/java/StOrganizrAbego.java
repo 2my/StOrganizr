@@ -19,6 +19,8 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -31,6 +33,9 @@ import org.abego.treelayout.TreeForTreeLayout;
 import org.abego.treelayout.TreeLayout;
 import org.abego.treelayout.util.DefaultConfiguration;
 import org.abego.treelayout.util.DefaultTreeForTreeLayout;
+
+import sk.tommy.storganizr.model.DirTreeBuilder;
+import sk.tommy.storganizr.model.FsNode;
 
 public class StOrganizrAbego {
 
@@ -50,7 +55,9 @@ public class StOrganizrAbego {
 		if (treeName.equals("2")) {
 			tree = SampleTreeFactory.createSampleTree2();
 		} else if (treeName.equals("")) {
-			tree = SampleTreeFactory.createSampleTree();
+			Path start = FileSystems.getDefault().getPath(".");
+			FsNode root	= DirTreeBuilder.buildTree(start);
+			tree = SampleTreeFactory.createSampleTree(root);
 		} else {
 			throw new RuntimeException(String.format("Invalid tree name: '%s'",
 					treeName));
@@ -91,6 +98,21 @@ public class StOrganizrAbego {
 }
 
 class SampleTreeFactory {
+
+	public static TreeForTreeLayout<TextInBox> createSampleTree(FsNode rootNode) {
+		TextInBox root = new TextInBox(rootNode.label, 40, 20);
+		DefaultTreeForTreeLayout<TextInBox> tree = new DefaultTreeForTreeLayout<>(root);
+		addChildren(rootNode, root, tree);
+		return tree;
+	}
+
+	private static void addChildren(FsNode rootNode, TextInBox root, DefaultTreeForTreeLayout<TextInBox> tree) {
+		for (FsNode node : rootNode.children()) {
+			TextInBox child	= new TextInBox(node.label, node.label.length() * 9, 20);
+			tree.addChild(root, child);
+			addChildren(node, child, tree);
+		}
+	}
 
 	/**
 	 * @return a "Sample" tree with {@link TextInBox} items as nodes.
