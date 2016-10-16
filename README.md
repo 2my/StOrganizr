@@ -46,6 +46,17 @@ http://stackoverflow.com/questions/24092091/jgraphx-drop-a-vertex-in-another-ver
 Open source graph visualization software.   [Toolkit][gephilib] is appropriate for library, see [Gephi Toolkit portal][gephilibportal].  
 
 
+## Alternative
+
+Google: graph visualization library
+Google: Tree graph Layout swing
+Scala: https://github.com/rsimon/scala-force-layout
+Js:
+  http://getspringy.com/
+  https://github.com/showcases/data-visualization
+  http://sigmajs.org/
+MacOS / C: http://graphviz.org (http://stackoverflow.com/questions/9583267/graph-library-for-cocoa)
+
 
 
   [abego]: http://treelayout.sourceforge.net  "abego treelayout component"
